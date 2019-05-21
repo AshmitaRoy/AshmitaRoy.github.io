@@ -1,0 +1,262 @@
+---
+title: "CMSC320: 0101: Final Project"
+author: "Ashmita Roy"
+date: "May 5, 2019"
+output: html_document
+---
+<span style="color:darkgreen"> </span>
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<p style="font-family: times, serif; font-size:30pt; font-style:bold"> <span style="color:green"> Houses in California </p>
+
+####<span style="color:navy">By Ashmita Roy </span>
+
+<p style="font-family: times, serif; font-size:25pt; font-style:bold"> <span style="color:lightgreen"> Introduction: </span> </p>
+
+####Who doesn't dream of owning a house in the Bay Area?! California is a dream for homeowners and this dream shows no signs of dying down. However, this poster (showing land companies putting out advertisements to attract homeowners to California) dated 12 October 1876 tells us that it was not always so! 
+
+<div style="width:200px; height:400px; float: right">
+![][id6] 
+</div>
+
+####We will use the Housing Data for California dataset (containing information from the 1990 California census) to investigate this. Initially this tutorial walks you through the process of cleaning the available data, some visualisation of the data for exploratory analysis and then follow it up with some models to predict the value of a house in a particular block/location of California.
+
+
+#####Initially this tutorial walks you through the process of the Data Science Pipeline:  
+
+* Gathering, parsing and cleaning available data
+* Exploratory data analysis and data visualisation 
+* Statistical and Machine Learning
+
+
+<div style="width:700px; height:300px; float: middle">
+![][id]
+</div>
+
+###<span style="color:green"> Data Exploration </span>
+
+<style>
+div.blue pre { background-color:#fff68f; }
+div.blue pre.r { background-color:#afeeee; }
+</style>
+
+
+###Pre-requisites:
+* R or RStudio
+
+* Packages in R are third-party add-ons that allow a multitude of actions. To install a package
+    : Open RStudio or R and type the following into the console:<span style="color:green"install.packages("package_name")</span>
+
+* Install the following packages: 
+    + tidyverse
+    + reshape2
+    
+<div class = "blue">
+```{r, message=FALSE}
+
+#loading the packages we've installed
+library(tidyverse)
+library(reshape2)
+```
+</div>
+
+##Data Ingestion, Cleaning
+With any task, the quality of the output depends on the quality of the inputs. Thus, gathering, cleaning and preparing data in any project is of immense importance. 
+
+##Initialisation:
+
+###Step 1
+
+* GATHER DATA
+
+Download the dataset( available as a CSV file named housing.csv ) from [https://www.kaggle.com/camnugent/california-housing-prices/downloads/california-housing-prices.zip/1] [id1]
+
+* INGEST AND PARSE DATA
+
+The readr R package, included in our tidyverse package allows us to use read_csv to read a dataset in a CSV(comma-separated-value) file. <span style="color:tomato"> [ Ensure that you have downloaded your dataset into your current working directory.] </span> .You can READ more about the readr package [here] [id2]
+
+<div class = "blue">
+```{r}
+#to read the CSV file, located in the current working directory
+housing = read.csv('housing.csv')
+
+#to display the first few records from all the columns, a glance at the data itself
+head(housing)
+
+```
+</div>
+
+This tells us that the dataset describes houses and their occupants.  
+It is evident that each row is denoting a certain block of households.  
+By now, we have taken a peek at the data.  
+Now, we attempt to get a gist of the dataset we are dealing with.
+
+<div class = "blue">
+```{r}
+#summarized description of the attributes
+summary(housing)
+
+
+#to get an idea about all the columns in the dataset, we check the Column Names
+colnames(housing)
+```
+</div>
+
+###Step 2
+
+##__Data Exploration and Visualization__
+
+Exploring data visually is a considerably important initial step. Visualization gives us the chance to pinpoint structure, similarities, potential relationships and aberrations in the dataset. Quite commonly, no further formal analysis is required as visual data exploration aids the user fully.  
+Else, it acts as a vital stepping stone to future formal analyses.
+
+Now an attempt can be made to transform this dataset into a graphical form, so it is easy to grasp as a visual concept.  
+We do this using ggplot (which was included in our tidyverse package) to create histograms for each attribute.
+This cheatsheet can help while using ggplot [https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf] [id3]
+
+###2.1 Creating plots to visualise the dataset:
+
+
+###Histogram showing the median house value for households within a block (measured in US Dollars)
+<div class = "blue">
+
+```{r, message=FALSE}
+#adding colour to the histogram
+barfill="#87CEEB"
+baroutline="#00ced1"
+
+#Creating a histogram where median_house_value is plotted along the X axis
+hist <- ggplot(housing, mapping=aes(x=median_house_value)) + geom_histogram( colour= baroutline, fill=barfill, alpha=1 ) + scale_x_continuous(name = "Median House Value") + scale_y_continuous(name = "Count")
+hist
+```
+</div>
+
+__NOTE:__     
+
+* We see that the median_house_value ie the value of the house seems to be capped at a certain maximum value, which we must remember to allow for in our analysis.  
+* Various colours can be added to plots to add dimension and interactivity.  
+Obtain the pertinent colour codes from [https://www.color-hex.com/] [id4]  
+
+  
+In the next few plots, we will use a gradient of colours to enhance the histogram's visual impact.  
+You can learn more about this [here] [id5].  
+
+###Histogram showing the total number of rooms
+<div class = "blue">
+
+```{r, message=FALSE}
+
+#Creating a histogram where total_rooms is plotted along the X axis
+hist <- ggplot(housing, mapping=aes(x=total_rooms, fill=..count..)) + geom_histogram( alpha=0.9 ) + scale_x_continuous(name = "Total Number of Rooms") + scale_y_continuous(name = "Count") +scale_fill_gradient("Count", low = "yellow", high = "#00ced1")
+hist
+```
+</div>
+
+###Histogram showing the distribution of median income for households within a block of houses (measured in tens of thousands of US Dollars) 
+<div class = "blue">
+
+```{r, message=FALSE}
+
+#Creating a histogram where median_income is plotted along the X axis
+hist <- ggplot(housing, mapping=aes(x=median_income, fill=..count..)) + geom_histogram( alpha=0.9 ) + scale_x_continuous(name = "Median Income of Housing ") + scale_y_continuous(name = "Count") +scale_fill_gradient("Count", low = "#ccff00", high = "lightblue")
+hist
+```
+</div>
+
+
+
+###Histogram showing the distribution of age across housings
+<div class = "blue">
+
+```{r, message=FALSE}
+
+#Creating a histogram where housing_median_age is plotted along the X axis
+hist <- ggplot(housing, mapping=aes(x=housing_median_age, fill=..count..)) + geom_histogram( alpha=0.9 ) + scale_x_continuous(name = "Median Age of Housing ") + scale_y_continuous(name = "Count") +scale_fill_gradient("Count", low = "red", high = "navy")
+hist
+```
+</div>
+
+###Histogram showing the total number of bedrooms
+<div class = "blue">
+
+```{r, message=FALSE}
+#adding colour to the histogram
+
+#Creating a histogram where total_bedrooms is plotted along the X axis
+hist <- ggplot(housing, mapping=aes(x=total_bedrooms, fill=..count..)) + geom_histogram( alpha=0.9 ) + scale_x_continuous(name = "Total Number of Bedrooms") + scale_y_continuous(name = "Count") +scale_fill_gradient("Count", low = "pink", high = "gold1")
+hist
+```
+</div>
+
+####__NOTE__
+The warning we received after plotting the histogram for the __total_bedrooms__ attribute :  
+(`Removed 207 rows containing non-finite values (stat_bin) `)   
+tells us that missing values exist, which we will impute in our next step.
+
+###Histogram showing the distribution of population across housings
+<div class = "blue">
+
+```{r, message=FALSE}
+
+#Creating a histogram where population is plotted along the X axis
+hist <- ggplot(housing, mapping=aes(x=population, fill=..count..)) + geom_histogram( alpha=0.9 ) + scale_x_continuous(name = "Population Count of Housing ") + scale_y_continuous(name = "Count") +scale_fill_gradient("Count", low = "#ff1493", high = "gold1")
+hist
+```
+</div>
+
+###Histogram showing the distribution of households across housings
+<div class = "blue">
+
+```{r, message=FALSE}
+
+#Creating a histogram where households is plotted along the X axis
+hist <- ggplot(housing, mapping=aes(x=households, fill=..count..)) + geom_histogram( alpha=0.9 ) + scale_x_continuous(name = "Number of Households in a Housing ") + scale_y_continuous(name = "Count") +scale_fill_gradient("Count", low = "tomato", high = "blue")
+hist
+```
+</div>
+
+####The above seemingly random attempts at visualising our dataset may not seem intuitive or helpful at this point, but they offer us multiple takeaways:
+
+It is necessary for us to :  
+
+* Impute missing values like N/A that exist in the dataset.
+* The ranges for the variables vary hugely, thus we require to standardize the scale of the data when we use any non-tree based methods 
+* It is noticeable that the columns involve the total number of rooms, bedrooms which we woud prefer to convert to a mean value for that housing block. 
+
+
+###2.2 Cleaning the data based on insights from the visualisations carried out:
+
+Here we fill in the missing values with the median of the column for total_bedrooms. For more help on imputing missing/erroneous values, see [here] [id7].
+<div class = "blue">
+
+```{r, message=FALSE}
+housing$total_bedrooms[is.na(housing$total_bedrooms)] = median(housing$total_bedrooms , na.rm = TRUE)
+```
+</div>
+
+We also noticed that the columns for total number of bedrooms and total number of rooms would be better off converted into a central statistic like a mean or a median value. As the mean can be easily calculated, we use it here.
+
+<div class = "blue">
+
+```{r, message=FALSE}
+housing$mean_bedrooms = housing$total_bedrooms/housing$households
+housing$mean_rooms = housing$total_rooms/housing$households
+
+drops = c('total_bedrooms', 'total_rooms')
+
+head(housing)
+
+```
+</div>
+
+
+
+
+[id]: dsprocess.png 
+[id1]: https://www.kaggle.com/camnugent/california-housing-prices/downloads/california-housing-prices.zip/1
+[id2]: https://cran.r-project.org/web/packages/readr/index.html
+[id3]: https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf
+[id4]: https://www.color-hex.com/
+[id5]: http://t-redactyl.io/blog/2016/02/creating-plots-in-r-using-ggplot2-part-7-histograms.html
+[id6]: cal.jpg
+[id7]: https://medium.com/coinmonks/dealing-with-missing-data-using-r-3ae428da2d17
