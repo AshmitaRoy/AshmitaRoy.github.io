@@ -12,20 +12,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <p style="font-family: times, serif; font-size:25pt; font-style:bold"> <span style="color:lightgreen"> Introduction: </span> </p>
 
-####Who doesn't dream of owning a house in the Bay Area?! California is a dream for homeowners and this dream shows no signs of dying down. However, this poster (showing land companies putting out advertisements to attract homeowners to California) dated 12 October 1876 tells us that it was not always so! 
+<p style="font-family: times, serif; font-size:14pt; font-style:bold"> <span style="color:Navy"> 
+Who doesn't dream of owning a house in the Bay Area?! California is a dream for homeowners and this dream shows no signs of dying down. However, this poster (showing land companies putting out advertisements to attract homeowners to California) dated 12 October 1876 tells us that it was not always so! </p> 
 
 <div style="width:200px; height:400px; float: right">
 ![][id6] 
 </div>
 
-####We will use the Housing Data for California dataset (containing information from the 1990 California census) to investigate this. Initially this tutorial walks you through the process of cleaning the available data, some visualisation of the data for exploratory analysis and then follow it up with some models to predict the value of a house in a particular block/location of California.
+We will use the Housing Data for California dataset (containing information from the 1990 California census) to investigate this. Initially this tutorial walks you through the process of cleaning the available data, some visualisation of the data for exploratory analysis and then follow it up with some models to predict the value of a house in a particular block/location of California.
 
 
-#####Initially this tutorial walks you through the process of the Data Science Pipeline:  
+#####This tutorial walks you through the process of the Data Science Pipeline:  
 
-* Gathering, parsing and cleaning available data
-* Exploratory data analysis and data visualisation 
-* Statistical and Machine Learning
+* Gathering, parsing and cleaning available data: on Housing Blocks in California from 1990
+* Exploratory data analysis and data visualisation : See the dataset in a visual form with plots and get an image of what the values are typically.
+* Statistical and Machine Learning : Make predictions about attributes of the dataset using other attributes and then check how accurate our predictions , using a model were.
 
 
 <div style="width:700px; height:300px; float: middle">
@@ -73,9 +74,11 @@ With any task, the quality of the output depends on the quality of the inputs. T
 
 Download the dataset( available as a CSV file named housing.csv ) from [https://www.kaggle.com/camnugent/california-housing-prices/downloads/california-housing-prices.zip/1] [id1]
 
-* INGEST AND PARSE DATA
+* INGEST AND PARSE DATA  
 
-The readr R package, included in our tidyverse package allows us to use read_csv to read a dataset in a CSV(comma-separated-value) file. <span style="color:tomato"> [ Ensure that you have downloaded your dataset into your current working directory.] </span> .You can READ more about the readr package [here] [id2]
+The readr R package, included in our tidyverse package allows us to use read_csv to read a dataset in a CSV(comma-separated-value) file.  
+<span style="color:tomato"> [ Ensure that you have downloaded your dataset into your current working directory.] </span> .  
+You can READ more about the readr package [here] [id2]  
 
 <div class = "blue">
 ```{r}
@@ -104,7 +107,7 @@ colnames(housing)
 ```
 </div>
 
-###Step 2
+###:<span style="color:green"Step 2</span>
 
 ##__Data Exploration and Visualization__
 
@@ -115,7 +118,7 @@ Now an attempt can be made to transform this dataset into a graphical form, so i
 We do this using ggplot (which was included in our tidyverse package) to create histograms for each attribute.
 This cheatsheet can help while using ggplot [https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf] [id3]
 
-###2.1 Creating plots to visualise the dataset:
+###2.1 Creating plots to visualise the dataset:  
 
 
 ###Histogram showing the median house value for households within a block (measured in US Dollars)
@@ -194,7 +197,7 @@ The warning we received after plotting the histogram for the __total_bedrooms__ 
 (`Removed 207 rows containing non-finite values (stat_bin) `)   
 tells us that missing values exist, which we will impute in our next step.
 
-###Histogram showing the distribution of population across housings
+###Histogram showing the distribution of population across housing blocks
 <div class = "blue">
 
 ```{r, message=FALSE}
@@ -205,7 +208,7 @@ hist
 ```
 </div>
 
-###Histogram showing the distribution of households across housings
+###Histogram showing the distribution of number of households across housing blocks
 <div class = "blue">
 
 ```{r, message=FALSE}
@@ -271,7 +274,8 @@ levels(housing$ocean_proximity)
 ```
 </div>
 
-We will create a new categorical table so that its columns correspond to the categorical levels of the ocean_proximity column. 
+We will create a new categorical table so that its columns correspond to the categorical levels of the ocean_proximity column.   
+
 <div class = "blue">
 ```{r}
 list_types = unique(housing$ocean_proximity)
@@ -342,16 +346,28 @@ head(housing_final)
 ```
 </div>
 
+####__NOTE__
+After modifying our ocean_proximity column into 5 columns, we can visualise this to get a better idea about this attribute of our dataset.
+
+####Time based value plot showing the proximity to the ocean of a housing unit across housing blocks
+You can learn more about this handy function [here][id10]
+<div class = "blue">
+
+```{r, message=FALSE}
+plot.ts(oceanprox)
+```
 
 ###Step 3
+In our simple linear regression model, the goal is to analyse a relationship between variables, which we for simplicity, assume is given by a linear function.
 
-##__Create test set of data__
+__Create test set of data: __
+
 We can begin testing some predictive models to predict the median value of the house using a few attributes as predictors : 
 
 <div class= "blue">
 ```{r}
 #We set a random seed value
-set.seed(1738)
+set.seed(1111)
 
 n=nrow(housing_final)
 sample = sample.int(n, size = floor(1*nrow(housing_final)), replace = F)
@@ -381,7 +397,7 @@ Thus we are checking how the median value of the house depends on the other rele
 
 <div class = "blue">
 ```{r, message=FALSE}
-#This package 
+#This package provides extensive facilities for bootstrapping and related resampling methods
 library('boot')
 
 house = glm(median_house_value~median_income+mean_rooms+mean_bedrooms+population+latitude+longitude+housing_median_age, data=housing_final)
@@ -406,21 +422,21 @@ house$coefficients
 
 ####Interpreting the above results:
 We can see that the coefficient for median_income outweighs the other predictors greatly, ie it is the biggest driving factor in determining the median value of a house in a certain block.
-We can also see how the 
+We can also see how some of the attributes hardly contribute to the median housing value, thus later we can treat them as negligibly significant.
 
 ###Final Insights:
-After scaling our inputs we can see that out of the factors we checked, the major effect on the median housing value was by median_income ie the median income of the housing block. However, this is a hasty judgement and possibly other questions must be delved into before declaring any results.
+After scaling our inputs we can see that out of the factors we checked, the major effect on the median housing value was by median_income ie the median income of the housing block. However, this is a hasty judgement and other questions must be delved into before declaring any results.
 
 __NOTE: My RF model stopped working randomly so I was forced to use only a simple linear models, however, a RandomForest can help with accurate predictions and better test and training data.__
 
 
 ####__EXTRA IDEAS:__
 
-* You can build a coefficient plot using the package __coefplot__
-You can have more fun with this package and learn about it [here][id9]
-For example, to show the relationship between the median house value and a few of the other attributes.  
+* You can build a coefficient plot using the package __coefplot__  
+* You can have more fun with this package and learn about it [here][id9]  
+* For example, to show the relationship between the median house value and a few of the other attributes.  
 <div class= "blue">
-```{r}
+```{r, message=FALSE}
 library(coefplot)
 
 data(housing)
@@ -447,15 +463,22 @@ house_ocean$coefficients
 ```
 </div>
 
-###Acknowledgements:
+####Interpreting the above results:
+We can see that the coefficient for ISLAND outweighs the other predictors greatly, ie it is the biggest driving factor in determining the median value of a house in a certain block.
+
+
+###Acknowledgements:  
 This data was initially featured in the following paper: Pace, R. Kelley, and Ronald Barry. "Sparse spatial autoregressions." Statistics & Probability Letters 33.3 (1997): 291-297.
 
 ###References:  
 * Housing Dataset from Kaggle: https://www.kaggle.com/camnugent/california-housing-prices/downloads/california-housing-prices.zip/1
 * R Documentation: https://www.rdocumentation.org/ 
 * Extra help for R: https://cran.r-project.org/
-* Colour codes from https://www.color-hex.com/
-* 
+* Color codes from https://www.color-hex.com/
+* CMSC320 Lecture Notes: http://www.hcbravo.org/IntroDataSci/bookdown-notes/   
+* California Land Popularity, Image: https://www.quora.com/Was-California-always-a-popular-state  
+* Missing Data in R:https://medium.com/coinmonks/dealing-with-missing-data-using-r-3ae428da2d17 
+* Using ggplot: http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html
 
 
 [id]: dsprocess.png 
@@ -468,3 +491,4 @@ This data was initially featured in the following paper: Pace, R. Kelley, and Ro
 [id7]: https://medium.com/coinmonks/dealing-with-missing-data-using-r-3ae428da2d17
 [id8]: https://www.rdocumentation.org/packages/base/versions/3.6.0/topics/scale
 [id9]: https://cran.r-project.org/web/packages/coefplot/coefplot.pdf 
+[id10]: https://www.rdocumentation.org/packages/stats/versions/3.6.0/topics/plot.ts
