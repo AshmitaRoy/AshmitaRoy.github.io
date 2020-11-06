@@ -1,2 +1,3 @@
 # ashmitaroy.github.io
-Final Project CMSC320 : Data Science
+
+Hi this is Ash's portfolio.
